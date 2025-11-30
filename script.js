@@ -69,37 +69,7 @@ function showApp() {
         loadMessages();
     }, 100);
 }
-async function checkAvailableEndpoints() {
-    const baseUrl = 'https://inova-messenger.onrender.com';
-    const endpoints = [
-        '/api/login',
-        '/api/register',
-        '/api/messages',
-        '/api/users',
-        '/login',
-        '/register',
-        '/messages',
-        '/'
-    ];
-    
-    console.log('=== CHECKING AVAILABLE ENDPOINTS ===');
-    
-    for (const endpoint of endpoints) {
-        try {
-            const response = await fetch(baseUrl + endpoint, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            console.log(`✅ ${endpoint}: ${response.status}`);
-        } catch (error) {
-            console.log(`❌ ${endpoint}: ${error.message}`);
-        }
-    }
-}
 
-// Вызовите в консоли браузера: checkAvailableEndpoints()
 // Функция для генерации дефолтного аватара (SVG)
 function generateDefaultAvatar(username) {
     if (!username) return '';
@@ -120,19 +90,6 @@ function getAvatarColor(username) {
     }
     const index = Math.abs(hash % colors.length);
     return colors[index];
-}
-
-// Добавьте эту функцию для проверки ответа сервера
-async function handleApiResponse(response, endpoint) {
-    const contentType = response.headers.get('content-type');
-    
-    if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error(`Server returned non-JSON response for ${endpoint}:`, text.substring(0, 200));
-        throw new Error(`Server error: Received HTML instead of JSON. Status: ${response.status}`);
-    }
-    
-    return response.json();
 }
 
 // Функция для отображения превью аватара
@@ -271,12 +228,11 @@ function init() {
     
     if (currentUser) {
         displayAvatarPreview(currentUser.avatar);
-        // УДАЛИТЕ ЭТУ СТРОКУ: initializeMockData(); // Инициализируем мок-данные
         startMessagePolling();
     }
     
     updateLobbyUI();
-    console.log('Modern Messenger initialized'); // Убрали "(MOCK MODE)"
+    console.log('Modern Messenger initialized');
 }
 
 // Настройка обработчиков событий
@@ -456,16 +412,20 @@ function checkAuth() {
     }
 }
 
+// Функции входа и регистрации
 async function login() {
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    
+    console.log('Login attempt:', { username });
     
     if (!username || !password) {
-        alert('Please fill all fields');
+        alert('Пожалуйста, заполните все поля');
         return;
     }
     
     try {
+        console.log('Sending login request to /api/login...');
         const response = await fetch('/api/login', {
             method: 'POST',
             headers: {
@@ -477,35 +437,61 @@ async function login() {
             })
         });
         
+        console.log('Login response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Login error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Login response data:', data);
         
         if (response.ok) {
-            alert('Login successful!');
+            alert('Вход успешен!');
             // Сохраняем информацию о пользователе
             localStorage.setItem('currentUser', JSON.stringify({
                 id: data.userId,
                 username: data.username
             }));
-            showChat(); // Показываем чат
-            loadMessages(); // Загружаем сообщения
+            currentUser = {
+                id: data.userId,
+                username: data.username
+            };
+            showApp(); // Показываем основное приложение
         } else {
-            alert('Error: ' + data.error);
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Login failed: ' + error.message);
+        console.error('Login error:', error);
+        alert('Ошибка входа: ' + error.message);
     }
 }
+
 async function register() {
-    const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword').value;
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
+    
+    console.log('Registration attempt:', { username });
     
     if (!username || !password) {
-        alert('Please fill all fields');
+        alert('Пожалуйста, заполните все поля');
+        return;
+    }
+    
+    if (username.length < 3) {
+        alert('Имя пользователя должно быть не менее 3 символов');
+        return;
+    }
+    
+    if (password.length < 4) {
+        alert('Пароль должен быть не менее 4 символов');
         return;
     }
     
     try {
+        console.log('Sending registration request to /api/register...');
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: {
@@ -517,19 +503,29 @@ async function register() {
             })
         });
         
+        console.log('Registration response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Registration error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Registration response data:', data);
         
         if (response.ok) {
-            alert('Registration successful!');
+            alert('Регистрация успешна! Теперь вы можете войти.');
             showLogin(); // Переключаем на форму входа
         } else {
-            alert('Error: ' + data.error);
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Registration failed: ' + error.message);
+        console.error('Registration error:', error);
+        alert('Ошибка регистрации: ' + error.message);
     }
 }
+
 // Выход
 function logout() {
     localStorage.removeItem('token');
@@ -1861,11 +1857,3 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
-
-
-
-
-
-
-
-
