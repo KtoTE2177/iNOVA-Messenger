@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='', template_folder='')
 
 # Файл для хранения данных
 USERS_FILE = 'users.json'
@@ -29,10 +29,15 @@ def save_messages(messages):
     with open(MESSAGES_FILE, 'w', encoding='utf-8') as f:
         json.dump(messages, f, indent=2, ensure_ascii=False)
 
-# Главная страница
+# Главная страница - отдаем index.html
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# Статические файлы
+@app.route('/<path:path>')
+def serve_static(path):
+    return app.send_static_file(path)
 
 # API для регистрации
 @app.route('/api/register', methods=['POST'])
@@ -45,7 +50,7 @@ def register():
         username = data.get('username')
         password = data.get('password')
         
-        print(f"Регистрация: {username}")  # Для отладки
+        print(f"Регистрация: {username}")
         
         if not username or not password:
             return jsonify({'error': 'Username and password are required'}), 400
@@ -60,7 +65,7 @@ def register():
         new_user = {
             'id': len(users) + 1,
             'username': username,
-            'password': password,  # В реальном приложении нужно хешировать!
+            'password': password,
             'created_at': datetime.now().isoformat()
         }
         users.append(new_user)
@@ -87,7 +92,7 @@ def login():
         username = data.get('username')
         password = data.get('password')
         
-        print(f"Вход: {username}")  # Для отладки
+        print(f"Вход: {username}")
         
         users = load_users()
         
@@ -149,4 +154,6 @@ if __name__ == '__main__':
     if not os.path.exists(MESSAGES_FILE):
         save_messages([])
     
-    app.run(debug=True, port=5000)
+    # Конфигурация для Render
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
