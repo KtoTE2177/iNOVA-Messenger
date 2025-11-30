@@ -416,7 +416,7 @@ function checkAuth() {
     }
 }
 
-// Функция логина - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// Функция логина - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
 async function login() {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
@@ -446,30 +446,33 @@ async function login() {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Login error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            
+            if (response.status === 401) {
+                alert('Неверное имя пользователя или пароль');
+            } else {
+                alert('Ошибка сервера: ' + response.status);
+            }
+            return;
         }
         
         const data = await response.json();
         console.log('Login response data:', data);
         
-        if (data.success) {
-            alert('Вход успешен!');
-            
+        if (data.success && data.token) {
             // Сохраняем токен и пользователя
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             currentUser = data.user;
             
-            // ПОКАЗЫВАЕМ ОСНОВНОЙ ИНТЕРФЕЙС
+            showNotification('Вход успешен!');
             showApp();
-            
             updateLobbyUI();
         } else {
             alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
         }
     } catch (error) {
         console.error('Login error:', error);
-        alert('Ошибка входа: ' + error.message);
+        alert('Ошибка соединения: ' + error.message);
     }
 }
 
@@ -1913,3 +1916,4 @@ window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
 window.showApp = showApp;
 window.toggleFavorite = toggleFavorite;
+
