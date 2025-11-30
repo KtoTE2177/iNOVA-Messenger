@@ -560,63 +560,72 @@ async function sendMessage() {
     }
 
     const currentReplyToMessageId = replyToMessageId;
-    const currentReplyToUsername = replyToUsername;
-    const currentReplyToText = replyToText;
 
     if (input) input.value = '';
     
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        if (!currentUser || !currentUser.username) {
             showNotification('Ошибка авторизации', 'error');
             return;
         }
 
-        let messageData = {
+        const messageData = {
             text: text,
-            replyToId: currentReplyToMessageId
+            username: currentUser.username,
+            replyToId: currentReplyToMessageId || null
         };
 
-        // Для приватных сообщений
-        if (currentPrivateChatUser) {
-            messageData.receiver = currentPrivateChatUser;
-        }
-
-        const endpoint = currentPrivateChatUser ? '/private-message' : '/messages';
+        console.log('Sending message data:', messageData);
         
-        const response = await fetch(`${API_BASE}${endpoint}`, {
+        const response = await fetch('/api/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(messageData)
         });
 
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Server response data:', data);
         
         if (data.success) {
             showNotification('Сообщение отправлено ✅');
             // Перезагружаем сообщения чтобы увидеть новое
             setTimeout(() => {
-                if (currentPrivateChatUser) {
-                    loadPrivateChatMessages(currentPrivateChatUser);
-                } else {
-                    loadMessages();
-                }
+                loadMessages();
             }, 500);
         } else {
-            showNotification('Ошибка отправки сообщения: ' + data.message, 'error');
+            showNotification('Ошибка отправки сообщения: ' + (data.message || 'Неизвестная ошибка'), 'error');
         }
         
         clearReplyState();
         
     } catch (error) {
         console.error('Error sending message:', error);
-        showNotification('Ошибка отправки сообщения', 'error');
+        showNotification('Ошибка отправки сообщения: ' + error.message, 'error');
+        
+        // Временно показываем сообщение локально для тестирования
+        const tempMessage = {
+            id: Date.now(),
+            text: text,
+            username: currentUser.username,
+            timestamp: new Date().toISOString(),
+            isFavorite: false,
+            editedTimestamp: null,
+            avatar: null
+        };
+        addMessageToChat(tempMessage, true);
+        showNotification('Сообщение показано локально (серверная ошибка)', 'warning');
     }
 }
-
 // Отправка отредактированного сообщения
 async function sendEditMessage(messageId, newText) {
     console.log(`sendEditMessage: Attempting to edit message ID ${messageId} with text: ${newText}`);
@@ -1857,3 +1866,4 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
+
