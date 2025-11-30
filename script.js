@@ -39,36 +39,43 @@ function showAuth() {
 }
 
 function showApp() {
-    console.log('showApp: Function called.');
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
+    console.log('showApp: Showing main application interface');
     
-    hideSettings();
-    hideProfileModal();
-    hideImagePreview();
+    // Скрываем экран авторизации
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
     
+    if (authContainer) authContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'flex';
+    
+    // Обновляем информацию пользователя
     if (currentUser) {
-        document.getElementById('current-username').textContent = currentUser.username;
-        document.getElementById('favorites-username').textContent = currentUser.username;
+        const currentUsernameElement = document.getElementById('current-username');
+        const favoritesUsernameElement = document.getElementById('favorites-username');
+        
+        if (currentUsernameElement) currentUsernameElement.textContent = currentUser.username;
+        if (favoritesUsernameElement) favoritesUsernameElement.textContent = currentUser.username;
+        
         displayAvatarPreview(currentUser.avatar);
     }
     
+    // Показываем основной чат
     switchChat('general');
     
+    // Убеждаемся что элементы интерфейса видны
     setTimeout(() => {
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('message-input');
         
-        if (messagesContainer) {
-            messagesContainer.style.display = 'block';
-        }
-        if (messageInput) {
-            messageInput.style.display = 'block';
-        }
+        if (messagesContainer) messagesContainer.style.display = 'block';
+        if (messageInput) messageInput.style.display = 'block';
         
         loadMessages();
     }, 100);
 }
+
+// Добавь в глобальные функции в конце файла:
+window.showApp = showApp;
 
 // Функция для генерации дефолтного аватара (SVG)
 function generateDefaultAvatar(username) {
@@ -412,61 +419,24 @@ function checkAuth() {
     }
 }
 
-// Функции входа и регистрации
-async function login() {
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+// В функции login(), после успешной авторизации:
+if (response.ok) {
+    alert('Вход успешен!');
     
-    console.log('Login attempt:', { username });
+    // Сохраняем пользователя
+    localStorage.setItem('currentUser', JSON.stringify({
+        id: data.userId,
+        username: data.username
+    }));
+    currentUser = {
+        id: data.userId,
+        username: data.username
+    };
     
-    if (!username || !password) {
-        alert('Пожалуйста, заполните все поля');
-        return;
-    }
+    // ПОКАЗЫВАЕМ ОСНОВНОЙ ИНТЕРФЕЙС
+    showApp(); // ← ЭТУ СТРОКУ ДОБАВЬ!
     
-    try {
-        console.log('Sending login request to /api/login...');
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
-        });
-        
-        console.log('Login response status:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Login error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Login response data:', data);
-        
-        if (response.ok) {
-            alert('Вход успешен!');
-            // Сохраняем информацию о пользователе
-            localStorage.setItem('currentUser', JSON.stringify({
-                id: data.userId,
-                username: data.username
-            }));
-            currentUser = {
-                id: data.userId,
-                username: data.username
-            };
-            showApp(); // Показываем основное приложение
-        } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('Ошибка входа: ' + error.message);
-    }
+    updateLobbyUI();
 }
 
 async function register() {
@@ -1866,4 +1836,5 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
+
 
