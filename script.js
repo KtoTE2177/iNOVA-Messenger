@@ -457,131 +457,77 @@ function checkAuth() {
 }
 
 async function login() {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    
     if (!username || !password) {
-        showNotification('Заполните все поля', 'error');
+        alert('Please fill all fields');
         return;
     }
-
+    
     try {
-        showLoading(true, 'login');
-        
-        console.log('Sending login request to:', `${API_BASE}/login`);
-        
-        const response = await fetch(`${API_BASE}/login`, {
+        const response = await fetch('/api/login', {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password })
-        });
-
-        console.log('Login response status:', response.status);
-        
-        // Используем новую функцию для обработки ответа
-        const data = await handleApiResponse(response, '/login');
-        
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            let userData = data.user;
-
-            console.log("Login successful. Received user data:", userData);
-            
-            hideSettings();
-            hideProfileModal();
-
-            if (!userData.avatar) {
-                userData.avatar = generateDefaultAvatar(userData.username);
-            }
-            localStorage.setItem('user', JSON.stringify(userData));
-            currentUser = userData;
-            showNotification('Вход выполнен успешно! 🎉');
-            showApp();
-        } else {
-            showNotification('Ошибка: ' + data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        if (error.message.includes('HTML instead of JSON')) {
-            showNotification('Сервер временно недоступен. Попробуйте позже.', 'error');
-        } else {
-            showNotification('Ошибка соединения с сервером', 'error');
-        }
-    } finally {
-        showLoading(false, 'login');
-    }
-}
-
-async function register() {
-    const username = document.getElementById('register-username').value.trim();
-    const password = document.getElementById('register-password').value;
-
-    console.log('Register attempt:', { username, password });
-
-    if (!username || !password) {
-        showNotification('Заполните все поля', 'error');
-        return;
-    }
-
-    if (username.length < 3) {
-        showNotification('Логин должен быть не менее 3 символов', 'error');
-        return;
-    }
-
-    if (password.length < 6) {
-        showNotification('Пароль должен быть не менее 6 символов', 'error');
-        return;
-    }
-
-    try {
-        showLoading(true, 'register');
-        const defaultAvatar = generateDefaultAvatar(username);
-        
-        console.log('Sending registration request to:', `${API_BASE}/register`);
-        console.log('Request data:', { username, password, avatar: defaultAvatar, aboutMe: '' });
-        
-        const response = await fetch(`${API_BASE}/register`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                username: username, 
-                password: password, 
-                avatar: defaultAvatar, 
-                aboutMe: '' 
+            body: JSON.stringify({
+                username: username,
+                password: password
             })
         });
-
-        console.log('Registration response status:', response.status);
         
-        // Получим текст ответа для диагностики
-        const responseText = await response.text();
-        console.log('Raw response:', responseText);
+        const data = await response.json();
         
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Failed to parse JSON response:', e);
-            throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}`);
-        }
-        
-        if (data.success) {
-            showNotification('Регистрация успешна! Теперь войдите. ✅');
-            showLogin();
-            hideSettings();
-            hideProfileModal();
+        if (response.ok) {
+            alert('Login successful!');
+            // Сохраняем информацию о пользователе
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: data.userId,
+                username: data.username
+            }));
+            showChat(); // Показываем чат
+            loadMessages(); // Загружаем сообщения
         } else {
-            showNotification('Ошибка: ' + data.message, 'error');
+            alert('Error: ' + data.error);
         }
     } catch (error) {
-        console.error('Register error:', error);
-        showNotification('Ошибка регистрации: ' + error.message, 'error');
-    } finally {
-        showLoading(false, 'register');
+        console.error('Error:', error);
+        alert('Login failed: ' + error.message);
+    }
+}
+async function register() {
+    const username = document.getElementById('regUsername').value;
+    const password = document.getElementById('regPassword').value;
+    
+    if (!username || !password) {
+        alert('Please fill all fields');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Registration successful!');
+            showLogin(); // Переключаем на форму входа
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Registration failed: ' + error.message);
     }
 }
 // Выход
@@ -1915,6 +1861,7 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
+
 
 
 
