@@ -74,9 +74,6 @@ function showApp() {
     }, 100);
 }
 
-// Добавь в глобальные функции в конце файла:
-window.showApp = showApp;
-
 // Функция для генерации дефолтного аватара (SVG)
 function generateDefaultAvatar(username) {
     if (!username) return '';
@@ -419,24 +416,61 @@ function checkAuth() {
     }
 }
 
-// В функции login(), после успешной авторизации:
-if (response.ok) {
-    alert('Вход успешен!');
+// Функция логина - ИСПРАВЛЕННАЯ ВЕРСИЯ
+async function login() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
     
-    // Сохраняем пользователя
-    localStorage.setItem('currentUser', JSON.stringify({
-        id: data.userId,
-        username: data.username
-    }));
-    currentUser = {
-        id: data.userId,
-        username: data.username
-    };
+    console.log('Login attempt:', { username });
     
-    // ПОКАЗЫВАЕМ ОСНОВНОЙ ИНТЕРФЕЙС
-    showApp(); // ← ЭТУ СТРОКУ ДОБАВЬ!
+    if (!username || !password) {
+        alert('Пожалуйста, заполните все поля');
+        return;
+    }
     
-    updateLobbyUI();
+    try {
+        console.log('Sending login request to /api/login...');
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+        
+        console.log('Login response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Login error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Login response data:', data);
+        
+        if (data.success) {
+            alert('Вход успешен!');
+            
+            // Сохраняем токен и пользователя
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            currentUser = data.user;
+            
+            // ПОКАЗЫВАЕМ ОСНОВНОЙ ИНТЕРФЕЙС
+            showApp();
+            
+            updateLobbyUI();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Ошибка входа: ' + error.message);
+    }
 }
 
 async function register() {
@@ -596,6 +630,7 @@ async function sendMessage() {
         showNotification('Сообщение показано локально (серверная ошибка)', 'warning');
     }
 }
+
 // Отправка отредактированного сообщения
 async function sendEditMessage(messageId, newText) {
     console.log(`sendEditMessage: Attempting to edit message ID ${messageId} with text: ${newText}`);
@@ -1748,6 +1783,50 @@ function updateMessageFavoriteStatusInDOM(messageId, isFavorite) {
     }
 }
 
+// Функция для переключения избранного
+function toggleFavorite(messageId) {
+    console.log('Toggle favorite for message:', messageId);
+    const token = localStorage.getItem('token');
+    if (!token) {
+        showNotification('Вы не авторизованы', 'error');
+        return;
+    }
+
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (!messageElement) return;
+
+    const isFavorite = messageElement.dataset.isFavorite === 'true';
+
+    fetch(`${API_BASE}/message/favorite`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            messageId: parseInt(messageId),
+            isFavorite: !isFavorite
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageElement.dataset.isFavorite = !isFavorite;
+            const favoriteIcon = messageElement.querySelector('.message-favorite-icon');
+            if (favoriteIcon) {
+                favoriteIcon.classList.toggle('active', !isFavorite);
+            }
+            showNotification(isFavorite ? 'Убрано из избранного' : 'Добавлено в избранное');
+        } else {
+            showNotification('Ошибка: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating favorite status:', error);
+        showNotification('Ошибка при обновлении избранного', 'error');
+    });
+}
+
 // Функции для тестирования
 function testLoadMessages() {
     console.log('=== ТЕСТ ЗАГРУЗКИ СООБЩЕНИЙ ===');
@@ -1786,17 +1865,13 @@ function toggleBottomRightMenu() {
     // Реализуйте эту функцию по необходимости
 }
 
-function toggleFavorite(messageId) {
-    // Реализуйте эту функцию по необходимости
-}
-
 // Инициализация при загрузке
 window.onload = function() {
     init();
     setupKeyboardShortcuts();
 };
 
-// Глобальные функции для HTML - ДОБАВЬ ЭТОТ БЛОК В КОНЕЦ ФАЙЛА:
+// Глобальные функции для HTML
 window.showRegister = showRegister;
 window.showLogin = showLogin;
 window.login = login;
@@ -1836,8 +1911,5 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
-window.showApp = showApp; // ← ДОБАВЬ ЭТУ СТРОКУ
-window.login = login;     // ← И ЭТУ СТРОКУ (если еще нет)
-
-
-
+window.showApp = showApp;
+window.toggleFavorite = toggleFavorite;
