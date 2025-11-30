@@ -1796,7 +1796,7 @@ window.onload = function() {
     setupKeyboardShortcuts();
 };
 
-// Глобальные функции для HTML
+// Глобальные функции для HTML - ДОБАВЬ ЭТОТ БЛОК В КОНЕЦ ФАЙЛА:
 window.showRegister = showRegister;
 window.showLogin = showLogin;
 window.login = login;
@@ -1812,10 +1812,10 @@ window.toggleEmojiPicker = toggleEmojiPicker;
 window.hideEmojiPicker = hideEmojiPicker;
 window.insertEmoji = insertEmoji;
 window.addToFavorites = addToFavorites;
-window.editMessage = editMessage;       
-window.scrollToMessageAndHighlight = scrollToMessageAndHighlight; 
-window.clearEditState = clearEditState; 
-window.switchChat = switchChat; 
+window.editMessage = editMessage;
+window.scrollToMessageAndHighlight = scrollToMessageAndHighlight;
+window.clearEditState = clearEditState;
+window.switchChat = switchChat;
 window.saveAvatar = saveAvatar;
 window.generateDefaultAvatar = generateDefaultAvatar;
 window.showSettingsTab = showSettingsTab;
@@ -1836,5 +1836,8 @@ window.updateLobbyUI = updateLobbyUI;
 window.toggleUserStatus = toggleUserStatus;
 window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
+window.showApp = showApp; // ← ДОБАВЬ ЭТУ СТРОКУ
+window.login = login;     // ← И ЭТУ СТРОКУ (если еще нет)
+
 
 
