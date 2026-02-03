@@ -55,7 +55,9 @@ function showApp() {
         if (currentUsernameElement) currentUsernameElement.textContent = currentUser.username;
         if (favoritesUsernameElement) favoritesUsernameElement.textContent = currentUser.username;
         
-        displayAvatarPreview(currentUser.avatar);
+        if (currentUser.avatar) {
+            displayAvatarPreview(currentUser.avatar);
+        }
     }
     
     // Показываем основной чат
@@ -71,8 +73,9 @@ function showApp() {
         
         loadMessages();
     }, 100);
+    
+    console.log('✅ App shown successfully');
 }
-
 // Функция для генерации дефолтного аватара (SVG)
 function generateDefaultAvatar(username) {
     if (!username) return '';
@@ -399,22 +402,29 @@ function checkAuth() {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     
-    console.log('checkAuth: Token found:', !!token);
-    console.log('checkAuth: User data found:', !!user);
+    console.log('🔑 checkAuth:');
+    console.log('Token found:', !!token);
+    console.log('User data found:', !!user);
     
-    if (token && user) {
+    if (user) {
         try {
             currentUser = JSON.parse(user);
-            showApp();
+            console.log('Parsed user:', currentUser);
+            
+            if (currentUser && currentUser.username) {
+                console.log('✅ User is authenticated, showing app');
+                showApp();
+                return;
+            }
         } catch (error) {
-            console.error('Error parsing user data:', error);
-            logout();
+            console.error('❌ Error parsing user data:', error);
+            console.log('Invalid user data:', user);
         }
-    } else {
-        showAuth();
     }
+    
+    console.log('❌ No valid auth, showing auth screen');
+    showAuth();
 }
-
 // Функция логина - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
 async function login() {
     const username = document.getElementById('login-username').value;
@@ -457,17 +467,32 @@ async function login() {
         const data = await response.json();
         console.log('Login response data:', data);
         
-        if (data.success && data.token) {
-            // Сохраняем токен и пользователя
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            currentUser = data.user;
+        if (data.message === 'Login successful' && data.userId && data.username) {
+            // Успешный логин!
+            // Создаем объект пользователя в нужном формате
+            const userData = {
+                id: data.userId,
+                username: data.username,
+                avatar: null, // Аватар пока пустой
+                aboutMe: ''   // Описание пока пустое
+            };
             
-            showNotification('Вход успешен!');
+            // Сохраняем пользователя в localStorage
+            localStorage.setItem('token', 'dummy-token-' + Date.now()); // Временный токен
+            localStorage.setItem('user', JSON.stringify(userData));
+            currentUser = userData;
+            
+            console.log('✅ Login successful! User:', currentUser);
+            alert('Вход успешен!');
+            
+            // Показываем основное приложение
             showApp();
             updateLobbyUI();
+            
+            // Загружаем сообщения
+            loadMessages();
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка: Неверный формат ответа от сервера');
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -1915,5 +1940,6 @@ window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
 window.showApp = showApp;
 window.toggleFavorite = toggleFavorite;
+
 
 
