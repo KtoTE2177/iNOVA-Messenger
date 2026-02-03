@@ -1,5 +1,4 @@
-// Конфигурация сервера - тот же домен
-const API_BASE = '/api'; // Используем относительный путь
+const API_BASE = 'https://inova-messenger.onrender.com/api';
 
 let currentUser = null;
 let isConnected = true;
@@ -1916,4 +1915,5 @@ window.testLoadMessages = testLoadMessages;
 window.testAllUsers = testAllUsers;
 window.showApp = showApp;
 window.toggleFavorite = toggleFavorite;
+
 
