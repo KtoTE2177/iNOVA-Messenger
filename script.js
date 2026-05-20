@@ -640,92 +640,86 @@ function logout() {
 async function sendMessage() {
     const input = document.getElementById('message-input');
     const text = input.value.trim();
-    console.log(`sendMessage: Called. Current text: '${text}', editingMessageId: ${editingMessageId}`);
-    
+
     if (!text) {
         showNotification('Введите сообщение', 'error');
-        if (input) input.focus();
-        console.log('sendMessage: Text is empty, returning early.');
         return;
     }
-    
+
     if (editingMessageId) {
-        console.log(`sendMessage: Editing mode active. Calling sendEditMessage for ID ${editingMessageId}.`);
         sendEditMessage(editingMessageId, text);
         clearEditState();
         return;
     }
 
     const currentReplyToMessageId = replyToMessageId;
+    input.value = '';
 
-    if (input) input.value = '';
-    
     try {
         if (!currentUser || !currentUser.username) {
             showNotification('Ошибка авторизации', 'error');
             return;
         }
 
-        const messageData = {
+        // Определяем, куда отправлять и что слать
+        let url = '/api/messages';
+        let messageData = {
             text: text,
             username: currentUser.username,
             replyToId: currentReplyToMessageId || null,
             replyToUsername: currentReplyToMessageId ? replyToUsername : null,
             replyToText: currentReplyToMessageId ? replyToText : null
         };
-    
-        console.log('Sending message data:', messageData);
-        
-        const response = await fetch('/api/messages', {
+
+        // Если мы в приватном чате — меняем эндпоинт и добавляем получателя
+        if (currentPrivateChatUser) {
+            url = '/api/private-message';
+            messageData.receiver = currentPrivateChatUser; // кому отправляем
+        }
+
+        console.log('Отправка сообщения:', messageData, 'на', url);
+
+        const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(messageData)
         });
 
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Server error response:', errorText);
+            console.error('Ошибка сервера:', errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        console.log('Server response data:', data);
-        
+        console.log('Ответ сервера:', data);
+
         if (data.success) {
             showNotification('Сообщение отправлено ✅');
-            // Перезагружаем сообщения чтобы увидеть новое
-            setTimeout(() => {
-                loadMessages();
-            }, 500);
+
+            // Обновляем чат в зависимости от того, где мы находимся
+            if (currentPrivateChatUser) {
+                // Обновляем приватный чат
+                await loadPrivateChatMessages(currentPrivateChatUser);
+            } else {
+                // Обновляем общий или избранное
+                if (isFavoritesView) {
+                    loadMessages(true);
+                } else {
+                    loadMessages(false);
+                }
+            }
         } else {
-            showNotification('Ошибка отправки сообщения: ' + (data.message || 'Неизвестная ошибка'), 'error');
+            showNotification('Ошибка отправки: ' + (data.message || 'Неизвестная ошибка'), 'error');
         }
-        
+
         clearReplyState();
-        
+
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Ошибка отправки сообщения:', error);
         showNotification('Ошибка отправки сообщения: ' + error.message, 'error');
-        
-        // Временно показываем сообщение локально для тестирования
-        const tempMessage = {
-            id: Date.now(),
-            text: text,
-            username: currentUser.username,
-            timestamp: new Date().toISOString(),
-            isFavorite: false,
-            editedTimestamp: null,
-            avatar: null
-        };
-        addMessageToChat(tempMessage, true);
-        showNotification('Сообщение показано локально (серверная ошибка)', 'warning');
     }
 }
-
 // Отправка отредактированного сообщения
 async function sendEditMessage(messageId, newText) {
     console.log(`sendEditMessage: Attempting to edit message ID ${messageId} with text: ${newText}`);
