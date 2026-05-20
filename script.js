@@ -696,19 +696,38 @@ async function sendMessage() {
 
         if (data.success) {
             showNotification('Сообщение отправлено ✅');
-
-            // Обновляем чат в зависимости от того, где мы находимся
             if (currentPrivateChatUser) {
-                // Обновляем приватный чат
-                await loadPrivateChatMessages(currentPrivateChatUser);
+                // Добавляем новое сообщение в кэш
+                if (!privateChats[currentPrivateChatUser]) {
+                    privateChats[currentPrivateChatUser] = [];
+                }
+                // Сервер возвращает новое сообщение? Если да — используем его, иначе создаём локально
+                const newMsg = data.message || {
+                    id: Date.now(),
+                    text: text,
+                    username: currentUser.username,
+                    receiver: currentPrivateChatUser,
+                    timestamp: new Date().toISOString(),
+                    isFavorite: false,
+                    editedTimestamp: null,
+                    avatar: null,
+                    replyToId: messageData.replyToId,
+                    replyToUsername: messageData.replyToUsername,
+                    replyToText: messageData.replyToText
+                };
+                privateChats[currentPrivateChatUser].push(newMsg);
+                // Отображаем сообщение сразу
+                addMessageToChat(newMsg, false, true);
+                // Подстраховка: через секунду подгрузим актуальный список с сервера
+                setTimeout(() => loadPrivateChatMessages(currentPrivateChatUser), 1000);
             } else {
-                // Обновляем общий или избранное
                 if (isFavoritesView) {
                     loadMessages(true);
                 } else {
                     loadMessages(false);
                 }
             }
+        }
         } else {
             showNotification('Ошибка отправки: ' + (data.message || 'Неизвестная ошибка'), 'error');
         }
