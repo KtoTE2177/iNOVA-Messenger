@@ -3604,3 +3604,43 @@ select:focus,
 #clear-reply-button:hover {
     color: var(--danger);
 }
+
+
+/* Контекстное меню */
+#context-menu {
+    position: fixed;          /* фиксируем на экране */
+    z-index: 9999;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 4px 0;
+    min-width: 180px;
+    display: none;            /* по умолчанию скрыто, JS покажет */
+}
+
+/* Когда JS показывает меню, он убирает класс hidden, но мы также можем использовать display */
+#context-menu:not(.hidden) {
+    display: block;
+}
+
+/* Пункты меню */
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+    background: var(--hover);
+}
+
+.context-menu-item i {
+    width: 16px;
+    text-align: center;
+}
