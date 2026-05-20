@@ -301,17 +301,12 @@
         </div>
         
         <!-- Контекстное меню -->
-        <div id="context-menu" class="context-menu hidden">
-            <div class="context-menu-item" onclick="replyToMessage()">
-                <i class="fas fa-reply"></i> Ответить
-            </div>
-            <div class="context-menu-item" onclick="addToFavorites()">
-                <i class="fas fa-star"></i> В избранное
-            </div>
-            <div class="context-menu-item edit-option" onclick="editMessage()">
-                <i class="fas fa-edit"></i> Изменить
-            </div>
-        </div>
+        <div id="context-menu" class="hidden">
+		    <div id="menu-reply" class="context-menu-item"><i class="fas fa-reply"></i> Ответить</div>
+		    <div id="menu-favorite" class="context-menu-item"><i class="fas fa-star"></i> В избранное</div>
+		    <div id="menu-copy" class="context-menu-item"><i class="fas fa-copy"></i> Копировать</div>
+		    <div id="menu-edit" class="context-menu-item"><i class="fas fa-edit"></i> Редактировать</div>
+		</div>
     </div>
 
     <script src="script.js"></script>
