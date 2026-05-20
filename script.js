@@ -308,7 +308,41 @@ function setupEventListeners() {
             }
         });
     }
-
+    // Обработчики контекстного меню
+    const menuReply = document.getElementById('menu-reply');
+    const menuFavorite = document.getElementById('menu-favorite');
+    const menuCopy = document.getElementById('menu-copy');
+    const menuEdit = document.getElementById('menu-edit');
+    
+    if (menuReply) {
+        menuReply.addEventListener('click', function() {
+            replyToMessage(currentMessageElement);
+            hideContextMenu();
+        });
+    }
+    if (menuFavorite) {
+        menuFavorite.addEventListener('click', function() {
+            addToFavorites();
+            hideContextMenu();
+        });
+    }
+    if (menuCopy) {
+        menuCopy.addEventListener('click', function() {
+            if (currentMessageElement) {
+                const text = currentMessageElement.querySelector('.main-message-text')?.textContent || '';
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('Текст скопирован!');
+                });
+            }
+            hideContextMenu();
+        });
+    }
+    if (menuEdit) {
+        menuEdit.addEventListener('click', function() {
+            editMessage();
+            hideContextMenu();
+        });
+    }
     const clearReplyButton = document.getElementById('clear-reply-button');
     if (clearReplyButton) {
         clearReplyButton.addEventListener('click', clearReplyState);
