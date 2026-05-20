@@ -3557,3 +3557,50 @@ select:focus,
 .status-button i {
     font-size: 0.8rem;
 }
+
+/* Превью ответа (над полем ввода) */
+#reply-preview-container {
+    position: relative;
+    display: flex;                /* возвращаем flex, если был */
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--surface);   /* под цвет твоей темы */
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    max-height: 60px;             /* ограничиваем высоту */
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+#reply-preview-container.hidden {
+    display: none;
+}
+
+#reply-username {
+    font-weight: bold;
+    color: var(--accent);
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+#reply-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-secondary);
+}
+
+#clear-reply-button {
+    margin-left: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    font-size: 14px;
+}
+
+#clear-reply-button:hover {
+    color: var(--danger);
+}
