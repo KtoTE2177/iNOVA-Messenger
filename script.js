@@ -308,18 +308,21 @@ function setupEventListeners() {
             }
         });
     }
-        // Обработчик кликов внутри контекстного меню (делегирование)
+       // Обработчик кликов внутри контекстного меню (делегирование)
     const contextMenu = document.getElementById('context-menu');
     if (contextMenu) {
         contextMenu.addEventListener('click', function(e) {
-            // Определяем, по какому пункту кликнули (находим ближайший li или div с id)
             const menuItem = e.target.closest('li, div');
+            console.log('Клик в меню:', menuItem?.id, 'currentMessageElement:', currentMessageElement);
             if (!menuItem) return;
             const itemId = menuItem.id;
             
             if (itemId === 'menu-reply') {
+                console.log('Действие "Ответить"');
                 if (currentMessageElement) {
                     replyToMessage(currentMessageElement);
+                } else {
+                    console.error('Ошибка: currentMessageElement равен null!');
                 }
             } else if (itemId === 'menu-favorite') {
                 addToFavorites();
