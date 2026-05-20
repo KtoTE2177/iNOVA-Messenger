@@ -669,9 +669,10 @@ async function sendMessage() {
         const messageData = {
             text: text,
             username: currentUser.username,
-            replyToId: currentReplyToMessageId || null
+            replyToId: currentReplyToMessageId || null,
+            replyToUsername: currentReplyToMessageId ? replyToUsername : null,
+            replyToText: currentReplyToMessageId ? replyToText : null
         };
-
         console.log('Sending message data:', messageData);
         
         const response = await fetch('/api/messages', {
