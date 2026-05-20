@@ -727,7 +727,6 @@ async function sendMessage() {
                     loadMessages(false);
                 }
             }
-        }
         } else {
             showNotification('Ошибка отправки: ' + (data.message || 'Неизвестная ошибка'), 'error');
         }
