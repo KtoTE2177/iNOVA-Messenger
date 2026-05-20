@@ -2529,46 +2529,52 @@ select:focus,
     }
 }
 
-/* Контекстное меню */
-.context-menu {
-    position: absolute;
-    background: var(--bg-primary);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 8px 20px var(--shadow); /* Более мягкая тень для контекстного меню */
-    z-index: 2000; /* Выше других элементов */
-    min-width: 180px;
-    padding: 0.5rem 0;
+/* === КОНТЕКСТНОЕ МЕНЮ (перезаписываем всё) === */
+#context-menu {
+    position: fixed !important;
+    z-index: 9999 !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    padding: 4px 0 !important;
+    margin: 0 !important;
+    min-width: 180px !important;
+    width: auto !important;
+    max-width: 220px !important;
+    height: auto !important;
+    display: none;               /* по умолчанию скрыто, !important не нужен, т.к. класс .hidden перебивает */
+    top: 0;
+    left: 0;
+}
+
+#context-menu:not(.hidden) {
+    display: block !important;
 }
 
 .context-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.7rem 1.2rem;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 16px !important;
+    cursor: pointer !important;
+    color: var(--text) !important;
+    font-size: 14px !important;
+    gap: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    margin: 0 !important;
+    width: auto !important;
 }
 
 .context-menu-item:hover {
-    background: var(--bg-secondary);
-    color: var(--accent);
+    background: var(--hover) !important;
+    color: var(--text) !important;
 }
 
 .context-menu-item i {
-    font-size: 1.1rem;
-    width: 20px; /* Фиксированная ширина для иконок */
+    width: 16px;
     text-align: center;
 }
-
-.context-menu-item.edit-option {
-    border-top: 1px solid var(--border);
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-}
-
 .hidden {
     display: none !important;
 }
