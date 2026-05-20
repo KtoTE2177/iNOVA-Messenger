@@ -402,6 +402,7 @@ function setupEventListeners() {
             if (contextMenuVisible) {
                 hideContextMenu();
             }
+            
         });
         
         document.addEventListener('click', function(event) {
@@ -410,6 +411,18 @@ function setupEventListeners() {
                 searchResultsList.style.display = 'none';
             }
         });
+        if (userSearchInput) {
+            userSearchInput.addEventListener('focus', function() {
+                if (contextMenuVisible) {
+                    hideContextMenu();
+                }
+            });
+        
+            // 👇 ДОБАВЬ ЭТУ СТРОКУ:
+            userSearchInput.addEventListener('input', searchUsers);
+        
+            // Остальной код (если есть клик на документе) пусть остаётся
+        }
     }
     
     // Добавляем обработчик для кнопки смены статуса
