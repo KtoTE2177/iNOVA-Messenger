@@ -204,6 +204,8 @@ def send_message():
         text = data.get('text')
         username = data.get('username')
         replyToId = data.get('replyToId')
+        replyToUsername = data.get('replyToUsername')   # добавляем
+        replyToText = data.get('replyToText')           # добавляем
         
         print(f"Отправка сообщения: {username} - {text}")
         
@@ -220,6 +222,8 @@ def send_message():
             'username': username,
             'timestamp': datetime.now().isoformat(),
             'replyToId': replyToId,
+            'replyToUsername': replyToUsername,   # новое поле
+            'replyToText': replyToText,           # новое поле
             'isFavorite': False,
             'editedTimestamp': None,
             'avatar': None
