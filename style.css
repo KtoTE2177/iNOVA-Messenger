@@ -2529,12 +2529,12 @@ select:focus,
     }
 }
 
-/* === КОНТЕКСТНОЕ МЕНЮ (перезаписываем всё) === */
+/* === КОНТЕКСТНОЕ МЕНЮ (универсальные цвета, не зависят от темы) === */
 #context-menu {
     position: fixed !important;
     z-index: 9999 !important;
-    background: var(--surface) !important;
-    border: 1px solid var(--border) !important;
+    background: #ffffff !important;           /* белый фон */
+    border: 1px solid #cccccc !important;
     border-radius: 8px !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
     padding: 4px 0 !important;
@@ -2543,9 +2543,11 @@ select:focus,
     width: auto !important;
     max-width: 220px !important;
     height: auto !important;
-    display: none;               /* по умолчанию скрыто, !important не нужен, т.к. класс .hidden перебивает */
+    display: none;
     top: 0;
     left: 0;
+    color: #333333 !important;               /* тёмно-серый текст */
+    font-family: inherit;
 }
 
 #context-menu:not(.hidden) {
@@ -2557,7 +2559,7 @@ select:focus,
     align-items: center !important;
     padding: 10px 16px !important;
     cursor: pointer !important;
-    color: var(--text) !important;
+    color: #333333 !important;               /* тёмный текст */
     font-size: 14px !important;
     gap: 8px !important;
     background: transparent !important;
@@ -2567,16 +2569,14 @@ select:focus,
 }
 
 .context-menu-item:hover {
-    background: var(--hover) !important;
-    color: var(--text) !important;
+    background: #f0f0f0 !important;          /* светло-серый при наведении */
+    color: #333333 !important;
 }
 
 .context-menu-item i {
     width: 16px;
     text-align: center;
-}
-.hidden {
-    display: none !important;
+    color: #555555 !important;               /* иконки чуть светлее текста */
 }
 
 /* Стили для аватаров */
@@ -3611,42 +3611,3 @@ select:focus,
     color: var(--danger);
 }
 
-
-/* Контекстное меню */
-#context-menu {
-    position: fixed;          /* фиксируем на экране */
-    z-index: 9999;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 4px 0;
-    min-width: 180px;
-    display: none;            /* по умолчанию скрыто, JS покажет */
-}
-
-/* Когда JS показывает меню, он убирает класс hidden, но мы также можем использовать display */
-#context-menu:not(.hidden) {
-    display: block;
-}
-
-/* Пункты меню */
-.context-menu-item {
-    padding: 8px 16px;
-    cursor: pointer;
-    color: var(--text);
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.2s;
-}
-
-.context-menu-item:hover {
-    background: var(--hover);
-}
-
-.context-menu-item i {
-    width: 16px;
-    text-align: center;
-}
