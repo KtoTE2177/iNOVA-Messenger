@@ -398,6 +398,7 @@ function setupEventListeners() {
 
     const userSearchInput = document.getElementById('user-search-input');
     if (userSearchInput) {
+        
         userSearchInput.addEventListener('focus', function() {
             if (contextMenuVisible) {
                 hideContextMenu();
@@ -1374,6 +1375,7 @@ function hideImagePreview() {
 
 // Поиск пользователей
 async function searchUsers() {
+    console.log('searchUsers вызвана, поиск:', document.getElementById('user-search-input').value);
     const searchInput = document.getElementById('user-search-input');
     const searchResultsList = document.getElementById('search-results-list');
     
